@@ -17,6 +17,7 @@ const Paw = ({ small = false }: { small?: boolean }) => (
 export default function Home() {
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
+  const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -25,6 +26,14 @@ export default function Home() {
 
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form).entries());
+
+    if (demoMode) {
+      await new Promise((resolve) => setTimeout(resolve, 650));
+      form.reset();
+      setStatus("success");
+      setMessage("Preview complete. In production, these three items will be emailed to the Bear.");
+      return;
+    }
 
     try {
       const response = await fetch("/api/submit", {
@@ -103,6 +112,7 @@ export default function Home() {
               </button>
             </div>
 
+            {demoMode && <div className="preview-note">UI preview mode: no email will be sent.</div>}
             {message && <div className={`notice ${status}`} role="status">{message}</div>}
           </form>
         </div>
